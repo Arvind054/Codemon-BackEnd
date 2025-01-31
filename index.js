@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
+const axios = require('axios');
 const io = require("socket.io")(server, {
   cors: {
     origin: "http://localhost:5173", 
@@ -18,27 +19,40 @@ const peerServer = PeerServer({
 });
 const socketToPeer = new Map();
 const Rooms = new Map();
-
-const RoomIdtoCode = new Map();
 io.on('connection', (socket) => {
   socket.on('join-room', ({ userName, roomId, peerId }) => {
     if(!Rooms.has(roomId)){
       Rooms.set(roomId,new Set());
-      RoomIdtoCode.set(roomId,[]);
     }
     if (!socketToPeer.has(socket.id)) {
       socketToPeer.set(socket.id, {peerId:peerId,roomId:roomId});
     }
     Rooms.get(roomId).add(userName);
     socket.join(roomId);
-    io.to(roomId).emit('room-update', { peerId });
+    io.to(roomId).emit('room-update', { peerId,socketId:socket.id});
   });
   socket.on('code-change', ({roomId, code})=>{
-       RoomIdtoCode.set(roomId, code);
       socket.to(roomId).emit("codeUpdate", code);
   });
+  socket.on("sync-code", ({socketId, code, newLanguage})=>{
+     io.to(socketId).emit("codeUpdate", code);
+     io.to(socketId).emit("langChange", newLanguage);
+  })
   socket.on("langChange", ({roomId, newLanguage})=>{
     socket.to(roomId).emit("langChange", newLanguage);
+  });
+  socket.on("ececution-update", async({roomId, code, language,version,stdin})=>{
+    const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
+      language: language,
+      version: version,
+      files: [{ content: code }],
+      stdin
+  });
+    if(!response.data.run.stdout){
+      io.to(roomId).emit("ececution-update", {output:response.data.run.stderr});
+    }else{
+    io.to(roomId).emit("ececution-update", {output:response.data.run.stdout});
+    }
   });
   socket.on('leaveRoom', ()=>{
     if (socket) {
@@ -53,12 +67,6 @@ io.on('connection', (socket) => {
     }
     }
   });
-  socket.on("code-sync", ({roomId})=>{
-     if(RoomIdtoCode.has(roomId)){
-      const code = RoomIdtoCode.get(roomId);
-      socket.to(roomId).emit('code-sync', code);
-     }
-  })
   socket.on('disconnect', () => {
     if (socket) {
       const data = socketToPeer.get(socket.id);
