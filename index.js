@@ -13,10 +13,10 @@ const io = require("socket.io")(server, {
 
 const { PeerServer } = require('peer'); 
 const peerServer = PeerServer({
-  port: 9000, 
   path: '/myapp',
-  ssl: false, 
+  secure:true,
 });
+app.use('/peerjs', peerServer);
 const socketToPeer = new Map();
 const Rooms = new Map();
 io.on('connection', (socket) => {
