@@ -5,7 +5,7 @@ const server = http.createServer(app);
 const axios = require('axios');
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:5173", 
+    origin: "*", 
     methods: ["GET", "POST"],
     credentials: true,
   },
