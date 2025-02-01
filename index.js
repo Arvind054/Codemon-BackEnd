@@ -18,7 +18,7 @@ const peerServer = PeerServer({
   path: '/myapp',
   secure:true,
 });
-server.use('/peerjs', peerServer);
+app.use('/peerjs', peerServer);
 const socketToPeer = new Map();
 const Rooms = new Map();
 io.on('connection', (socket) => {
