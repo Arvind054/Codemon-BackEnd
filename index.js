@@ -4,6 +4,7 @@ const http = require('http');
 const server = http.createServer(app);
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
+const { PeerServer } = require("peer");
 const io = require("socket.io")(server, {
   cors: {
     origin: "*",  
@@ -11,6 +12,11 @@ const io = require("socket.io")(server, {
     credentials: true,
   }
 });
+const peerServer = PeerServer(server, {
+  debug: true,
+  path:'/peerjs',
+});
+app.use('/',peerServer);
 const socketToPeer = new Map();
 const Rooms = new Map();
 io.on('connection', (socket) => {
