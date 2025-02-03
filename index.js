@@ -9,16 +9,12 @@ const io = require("socket.io")(server, {
     origin: "*",  
     methods: ["GET", "POST"],
     credentials: true,
-  },
-  transports: ["websocket"],  
+  }
 });
 
 const { PeerServer } = require('peer'); 
-const peerServer = PeerServer({
-  path: '/myapp',
-  secure:true,
-});
-app.use('/peerjs', peerServer);
+const peerServer = PeerServer({ port: 443, path: "/myapp" });
+//app.use('/peerjs', peerServer);
 const socketToPeer = new Map();
 const Rooms = new Map();
 io.on('connection', (socket) => {
