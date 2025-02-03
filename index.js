@@ -4,7 +4,7 @@ const http = require('http');
 const server = http.createServer(app);
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
-const { PeerServer } = require("peer");
+const { ExpressPeerServer } = require("peer");
 const io = require("socket.io")(server, {
   cors: {
     origin: "*",  
@@ -12,9 +12,9 @@ const io = require("socket.io")(server, {
     credentials: true,
   }
 });
-const peerServer = PeerServer(server, {
-  debug: true,
-  path:'/peerjs',
+const peerServer = ExpressPeerServer(server, {
+	debug: true,
+	path: "/myapp",
 });
 app.use('/',peerServer);
 const socketToPeer = new Map();
