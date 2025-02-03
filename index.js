@@ -11,10 +11,6 @@ const io = require("socket.io")(server, {
     credentials: true,
   }
 });
-
-const { PeerServer } = require('peer'); 
-const peerServer = PeerServer({ port: 443, path: "/myapp" });
-//app.use('/peerjs', peerServer);
 const socketToPeer = new Map();
 const Rooms = new Map();
 io.on('connection', (socket) => {
@@ -82,5 +78,4 @@ io.on('connection', (socket) => {
 
 });
 
-server.listen(PORT, () => {
-});
+server.listen(PORT);
